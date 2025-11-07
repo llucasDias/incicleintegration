@@ -9,7 +9,7 @@ public record InviteRequest(
         @JsonProperty("level_id") String level_id,
         @JsonProperty("sector_id") String sector_id,
         @JsonProperty("unit_id") String unit_id,
-        @JsonProperty("admission_date")Date admission_date,
+        @JsonProperty("admission_date")String admission_date,
         @JsonProperty("salary") double salary,
         @JsonProperty("employment_type") String employment_type,
         @JsonProperty("work_card_number") String work_card_number,
