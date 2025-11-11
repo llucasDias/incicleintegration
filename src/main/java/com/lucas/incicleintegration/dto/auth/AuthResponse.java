@@ -1,4 +1,4 @@
-package com.lucas.incicleintegration.dto;
+package com.lucas.incicleintegration.dto.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

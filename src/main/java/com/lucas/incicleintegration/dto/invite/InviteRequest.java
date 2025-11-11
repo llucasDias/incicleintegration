@@ -1,7 +1,6 @@
-package com.lucas.incicleintegration.dto;
+package com.lucas.incicleintegration.dto.invite;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Date;
 
 public record InviteRequest(
         @JsonProperty("email") String email,
