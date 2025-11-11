@@ -1,8 +1,8 @@
 package com.lucas.incicleintegration.service;
 
 import com.lucas.incicleintegration.config.ApiProperties;
-import com.lucas.incicleintegration.dto.AuthRequest;
-import com.lucas.incicleintegration.dto.AuthResponse;
+import com.lucas.incicleintegration.dto.auth.AuthRequest;
+import com.lucas.incicleintegration.dto.auth.AuthResponse;
 import com.lucas.incicleintegration.exception.AuthenticationException;
 import com.lucas.incicleintegration.exception.ServerException;
 import com.lucas.incicleintegration.exception.WebClientResponseException;
@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+
+import java.time.Instant;
 
 /**
  * Serviço responsável por obter token de autenticação.
@@ -23,6 +25,10 @@ public class TokenService {
     private final WebClient authClient;
     private final ApiProperties apiProperties;
 
+    private String cachedToken;
+    private Instant tokenExpiration;
+
+
     public TokenService(
             @Qualifier("authClient") WebClient authClient,
             ApiProperties apiProperties) {
@@ -31,6 +37,11 @@ public class TokenService {
     }
 
     public String getToken() {
+
+        if (cachedToken != null && tokenExpiration != null && Instant.now().isBefore(tokenExpiration)) {
+            return cachedToken;
+        }
+
 
         AuthRequest request = new AuthRequest(apiProperties.getUsername(), apiProperties.getPassword());
 
@@ -45,7 +56,11 @@ public class TokenService {
                     .bodyToMono(AuthResponse.class)
                     .block();
 
-            return response.accessToken();
+            cachedToken = response.accessToken();
+
+            tokenExpiration = Instant.now().plusSeconds(response.expiresIn());
+
+            return cachedToken;
 
         } catch (AuthenticationException | ServerException e) {
             throw e;

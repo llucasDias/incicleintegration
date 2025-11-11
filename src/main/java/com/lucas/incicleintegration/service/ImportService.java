@@ -2,9 +2,10 @@ package com.lucas.incicleintegration.service;
 
 
 import com.lucas.incicleintegration.config.ApiProperties;
-import com.lucas.incicleintegration.dto.InviteRequest;
-import com.lucas.incicleintegration.dto.InviteRequestWrapper;
-import com.lucas.incicleintegration.dto.InviteResponseWrapper;
+import com.lucas.incicleintegration.dto.invite.InviteRequest;
+import com.lucas.incicleintegration.dto.invite.InviteRequestWrapper;
+import com.lucas.incicleintegration.dto.invite.InviteResponseWrapper;
+import com.lucas.incicleintegration.dto.linkingCode.LinkingCodeResponse;
 import com.lucas.incicleintegration.exception.AuthenticationException;
 import com.lucas.incicleintegration.exception.BusinessException;
 import com.lucas.incicleintegration.exception.ServerException;
@@ -14,7 +15,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -29,29 +29,32 @@ public class ImportService {
     private final WebClient inviteClient;
     private final ApiProperties apiProperties;
     private final TokenService tokenService;
+    private final LinkingCodeService linkingCodeService;
 
     public ImportService(
             ProtheusRepository protheusRepository,
             @Qualifier("inviteClient") WebClient inviteClient,
             ApiProperties apiProperties,
-            TokenService tokenService
+            TokenService tokenService, LinkingCodeService linkingCodeService
     ) {
         this.protheusRepository = protheusRepository;
         this.inviteClient = inviteClient;
         this.apiProperties = apiProperties;
         this.tokenService = tokenService;
+        this.linkingCodeService = linkingCodeService;
     }
 
     /**
      * Metodo principal que importa colaboradores do Protheus e envia convite via API externa.
      * @param matricula código do colaborador para busca no Protheus
      **/
+
     public void importarColaboradores(String matricula) {
 
         // Buscar colaboradores no Protheus pelo RA (matricula)
         List<Map<String, Object>> resultado = protheusRepository.buscarColaborador(matricula);
         if (resultado.isEmpty()) {
-            throw new RuntimeException("Nenhum colaborador encontrado");
+            throw new ValidationException("Nenhum colaborador encontrado");
         }
 
         // Obter token de autenticação via TokenService
@@ -64,38 +67,32 @@ public class ImportService {
 
         InviteRequestWrapper wrapper = new InviteRequestWrapper(listaInvite);
 
-        try {
-            // Enviar POST para API externa com tratamento de erros HTTP
-            InviteResponseWrapper responseWrapper = inviteClient.post()
-                    .uri(apiProperties.getInviteUrl())
-                    .header("Authorization", "Bearer " + token) // Adiciona token
-                    .bodyValue(wrapper) // Corpo da requisição
-                    .retrieve()
-                    .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
-                        if (clientResponse.statusCode().value() == 401) {
+        // Enviar POST para API com tratamento de erros HTTP
+        InviteResponseWrapper responseWrapper = inviteClient.post()
+                .uri(apiProperties.getInviteUrl())
+                .header("Authorization", "Bearer " + token) // Adiciona token
+                .bodyValue(wrapper)
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
+                    switch (clientResponse.statusCode().value()) {
+                        case 401:
                             return Mono.error(new AuthenticationException("Token expirado ou ausente"));
-                        }
-                        if (clientResponse.statusCode().value() == 422) {
+                        case 422:
                             return Mono.error(new BusinessException("Problema nos dados enviados"));
-                        }
-                        return Mono.error(new BusinessException("Erro 4xx desconhecido"));
-                    })
-                    .onStatus(HttpStatusCode::is5xxServerError, clientResponse ->
-                            Mono.error(new ServerException("Erro interno no servidor")))
-                    .bodyToMono(InviteResponseWrapper.class) // Faz o mapeamento para DTO
-                    .block(); // Bloqueia até a resposta chegar (síncrono)
+                        default:
+                            return Mono.error(new BusinessException("Erro 4xx desconhecido"));
+                    }
+                })
+                .onStatus(HttpStatusCode::is5xxServerError, clientResponse ->
+                        Mono.error(new ServerException("Erro interno no servidor")))
+                .bodyToMono(InviteResponseWrapper.class)
+                .block();
 
-            //Tratar o retorno
-            if (responseWrapper != null && responseWrapper.collaborators() != null) {
-                responseWrapper.collaborators().forEach(colab ->
-                        System.out.println("Convite enviado para: " + colab.email())
-                );
-            }
 
-        } catch (WebClientResponseException e) {
-            throw new ValidationException("Erro na requisição HTTP: " + e.getMessage());
-        } catch (Exception e) {
-            throw new ValidationException("Erro inesperado ao importar colaborador: " + e.getMessage());
+        if (responseWrapper != null && responseWrapper.collaborators() != null) {
+            String email = responseWrapper.collaborators().get(0).email();
+
+            LinkingCodeResponse linkingCodeResponse = linkingCodeService.buscarLinkingCode(email);
         }
     }
 
