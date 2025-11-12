@@ -1,11 +1,11 @@
 package com.lucas.incicleintegration.service;
 
 
+
 import com.lucas.incicleintegration.config.ApiProperties;
 import com.lucas.incicleintegration.dto.invite.InviteRequest;
 import com.lucas.incicleintegration.dto.invite.InviteRequestWrapper;
 import com.lucas.incicleintegration.dto.invite.InviteResponseWrapper;
-import com.lucas.incicleintegration.dto.linkingCode.LinkingCodeResponse;
 import com.lucas.incicleintegration.exception.AuthenticationException;
 import com.lucas.incicleintegration.exception.BusinessException;
 import com.lucas.incicleintegration.exception.ServerException;
@@ -29,26 +29,22 @@ public class ImportService {
     private final WebClient inviteClient;
     private final ApiProperties apiProperties;
     private final TokenService tokenService;
-    private final LinkingCodeService linkingCodeService;
 
     public ImportService(
             ProtheusRepository protheusRepository,
             @Qualifier("inviteClient") WebClient inviteClient,
             ApiProperties apiProperties,
-            TokenService tokenService, LinkingCodeService linkingCodeService
-    ) {
+            TokenService tokenService) {
         this.protheusRepository = protheusRepository;
         this.inviteClient = inviteClient;
         this.apiProperties = apiProperties;
         this.tokenService = tokenService;
-        this.linkingCodeService = linkingCodeService;
     }
 
     /**
      * Metodo principal que importa colaboradores do Protheus e envia convite via API externa.
      * @param matricula código do colaborador para busca no Protheus
-     **/
-
+     */
     public void importarColaboradores(String matricula) {
 
         // Buscar colaboradores no Protheus pelo RA (matricula)
@@ -70,56 +66,63 @@ public class ImportService {
         // Enviar POST para API com tratamento de erros HTTP
         InviteResponseWrapper responseWrapper = inviteClient.post()
                 .uri(apiProperties.getInviteUrl())
-                .header("Authorization", "Bearer " + token) // Adiciona token
+                .header("Authorization", "Bearer " + token)
+                .header("companyId", "750a4df3-28ca-41f0-a02a-ddc502dddefb")
                 .bodyValue(wrapper)
                 .retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
-                    switch (clientResponse.statusCode().value()) {
-                        case 401:
-                            return Mono.error(new AuthenticationException("Token expirado ou ausente"));
-                        case 422:
-                            return Mono.error(new BusinessException("Problema nos dados enviados"));
-                        default:
-                            return Mono.error(new BusinessException("Erro 4xx desconhecido"));
-                    }
-                })
+                .onStatus(HttpStatusCode::is4xxClientError, clientResponse ->
+                        clientResponse.bodyToMono(String.class)
+                                .flatMap(body -> {
+                                    int status = clientResponse.statusCode().value();
+                                    switch (status) {
+                                        case 401:
+                                            return Mono.error(new AuthenticationException("Token expirado ou ausente: " + body));
+                                        case 422:
+                                            return Mono.error(new BusinessException("Problema nos dados enviados: " + body));
+                                        default:
+                                            return Mono.error(new BusinessException("Erro 4xx desconhecido: " + body));
+                                    }
+                                }))
                 .onStatus(HttpStatusCode::is5xxServerError, clientResponse ->
                         Mono.error(new ServerException("Erro interno no servidor")))
                 .bodyToMono(InviteResponseWrapper.class)
                 .block();
-
-
-        if (responseWrapper != null && responseWrapper.collaborators() != null) {
-            String email = responseWrapper.collaborators().get(0).email();
-
-            LinkingCodeResponse linkingCodeResponse = linkingCodeService.buscarLinkingCode(email);
-        }
     }
 
     /**
-     * Mapeia os dados do Protheus para o DTO InviteRequest, aplicando validações
-     **/
+     * Mapeia os dados do Protheus para o DTO InviteRequest
+     */
     private InviteRequest mapearColaborador(Map<String, Object> c) {
-        double salario = validarSalario(c.get("RA_SALARIO"));
+        Integer salario = c.get("RA_SALARIO") != null
+                ? ((Number) c.get("RA_SALARIO")).intValue()
+                : 0;
+
         String sexo = validarSexo((String) c.get("RA_SEXO"));
-        String dataFormatada = formatarData(c.get("RA_ADMISS"));
+        String dataFormatada = formatarData((String) c.get("RA_ADMISSA"));
 
         return new InviteRequest(
-                (String) c.get("RA_EMAIL"),
-                (String) c.get("RA_NOME"),
+                trim(c.get("RA_EMAIL")),
+                trim(c.get("RA_NOME")),
                 null,
                 null,
                 null,
-                dataFormatada,
+                null,
+                null,
                 salario,
                 "FULL_TIME",
-                (String) c.get("RA_NUMCP"),
-                (String) c.get("RA_CIC"),
-                (String) c.get("RA_RG"),
-                (String) c.get("RA_ORGEMRG"),
-                (String) c.get("RA_PIS"),
+                null,
+                null,
+                null,
+                null,
+                null,
                 sexo
         );
     }
+
+    private String trim(Object value) {
+        return value == null ? null : value.toString().trim();
+    }
 }
+
+
 

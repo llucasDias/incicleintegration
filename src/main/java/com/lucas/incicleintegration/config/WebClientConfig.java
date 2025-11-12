@@ -52,7 +52,6 @@ public class WebClientConfig {
                 .baseUrl(apiProperties.getBaseUrl())
                 .defaultHeader("Content-Type", apiProperties.getContentType())
                 .defaultHeader("Accept", apiProperties.getAccept())
-                .defaultHeader("companyId", apiProperties.getCompanyId())
                 .build();
     }
 
@@ -62,7 +61,6 @@ public class WebClientConfig {
                 .baseUrl(apiProperties.getBaseUrl())
                 .defaultHeader("Content-Type", apiProperties.getContentType())
                 .defaultHeader("Accept", apiProperties.getAccept())
-                .defaultHeader("companyId", apiProperties.getCompanyId())
                 .build();
     }
 
