@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Integração Protheus x Incicle</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <!-- Título e instrução -->
+    <h1>Integração Protheus x Incicle</h1>
+    <p>Digite a matrícula do colaborador cadastrada no Protheus.</p>
+
+    <!-- Formulário de busca -->
+    <form th:action="@{/buscar}" method="post">
+        <input type="text" name="matricula" th:value="${matricula}" placeholder="Matrícula" required>
+        <br>
+        <button type="submit" class="btn-buscar">Buscar Colaborador</button>
+    </form>
+
+    <!-- Mensagem de status geral -->
+    <div th:if="${mensagem != null}" th:text="${mensagem}" class="mensagem"
+         th:classappend="${sucesso} ? ' success' : ' error'"></div>
+
+    <!-- Tabela com os dados do colaborador -->
+    <div th:if="${colaboradores != null}">
+        <h2>Dados do Colaborador</h2>
+        <table>
+            <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Data de Nascimento</th>
+                <th>Sexo</th>
+                <th>Salário</th>
+            </tr>
+            <tr th:each="c : ${colaboradores}">
+                <td th:text="${c.nome}"></td>
+                <td th:text="${c.email}"></td>
+                <td th:text="${c.nascimento}"></td>
+                <td th:text="${c.sexo}"></td>
+                <td th:text="${c.salario}"></td>
+            </tr>
+        </table>
+
+        <!-- Botões de ação -->
+        <form th:action="@{/enviar}" method="post" style="display:inline;">
+            <input type="hidden" name="matricula" th:value="${matricula}">
+            <button type="submit" class="btn-enviar">Enviar Convite</button>
+        </form>
+
+        <form th:action="@{/limpar}" method="post" style="display:inline;">
+            <button type="submit" class="btn-limpar">Limpar</button>
+        </form>
+
+        <!-- Simulação de status HTTP -->
+        <div class="status" th:if="${sucesso}">
+            Registro: 201 Created | Convite: 200 OK
+        </div>
+    </div>
+</div>
+</body>
+</html>

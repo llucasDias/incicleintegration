@@ -1,0 +1,106 @@
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6fa;
+    margin: 0;
+    padding: 0;
+    color: #001f4d;
+}
+
+/* Container central */
+.container {
+    width: 60%;
+    max-width: 900px;
+    margin: 50px auto;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.15);
+    text-align: center;
+}
+
+/* Título principal */
+h1 {
+    color: #001f4d;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+/* Subtítulo explicativo */
+p {
+    color: #3a79f7;
+    font-size: 1.2em;
+    margin-bottom: 30px;
+}
+
+/* Inputs */
+input[type="text"] {
+    padding: 12px;
+    width: 60%;
+    border-radius: 6px;
+    border: 1px solid #3a79f7;
+    font-size: 1em;
+    margin-bottom: 20px;
+}
+
+/* Botões */
+button {
+    padding: 12px 25px;
+    margin: 5px;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-buscar { background-color: #3a79f7; }
+.btn-buscar:hover { background-color: #3465d6; }
+
+.btn-enviar { background-color: #001f4d; }
+.btn-enviar:hover { background-color: #001a3d; }
+
+.btn-limpar { background-color: gray; }
+.btn-limpar:hover { background-color: #5a5a5a; }
+
+/* Tabela de dados */
+table {
+    margin: 20px auto;
+    border-collapse: collapse;
+    width: 90%;
+}
+
+table, th, td {
+    border: 1px solid #3a79f7;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background-color: #001f4d;
+    color: white;
+}
+
+td {
+    background-color: #f0f4ff;
+}
+
+/* Mensagens de status */
+.mensagem {
+    margin-top: 20px;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.success { color: green; }
+.error { color: red; }
+
+.status {
+    margin-top: 10px;
+    font-size: 0.95em;
+    color: #3a79f7;
+}

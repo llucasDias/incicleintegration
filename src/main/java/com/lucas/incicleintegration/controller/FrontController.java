@@ -1,18 +1,15 @@
 package com.lucas.incicleintegration.controller;
 
 
-import com.lucas.incicleintegration.dto.invite.InviteResponseWrapper;
 import com.lucas.incicleintegration.service.ImportService;
 import com.lucas.incicleintegration.service.RegisterService;
-import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.ui.Model;
 
 
-@RestController
-@RequestMapping("/api/invite")
-
+@Controller
 public class FrontController {
-
 
 
     private final ImportService importService;
@@ -24,20 +21,53 @@ public class FrontController {
         this.registerService = registerService;
     }
 
-    /**
-     * Endpoint simples para importar e registrar colaborador via matrícula
-     * Ex.: GET /api/invite?matricula=001205
-     */
 
-    @GetMapping
+    @GetMapping("/")
+    public String home(Model model) {
+        model.addAttribute("matricula", "");
+        return "index";
+    }
 
-    public ResponseEntity<String> importarERegistrar(@RequestParam String matricula) {
+    @PostMapping("/buscar")
+    public String buscarColaborador(@RequestParam("matricula") String matricula, Model model) {
+        try {
+            var colaboradores = importService.buscarColaboradorParaView(matricula);
+            model.addAttribute("colaboradores", colaboradores);
+            model.addAttribute("matricula", matricula);
 
+            if (colaboradores.isEmpty()) {
+                model.addAttribute("mensagem", "Nenhum colaborador encontrado.");
+                model.addAttribute("sucesso", false);
+            } else {
+                model.addAttribute("mensagem", "Colaborador encontrado!");
+                model.addAttribute("sucesso", true);
+            }
+        } catch (Exception e) {
+            model.addAttribute("mensagem", e.getMessage());
+            model.addAttribute("sucesso", false);
+        }
+        return "index";
+    }
 
-        importService.importarColaboradores(matricula);
+    @PostMapping("/enviar")
+    public String enviarConvite(@RequestParam("matricula") String matricula, Model model) {
+        try {
+            registerService.registrarColaborador(matricula);
+            model.addAttribute("mensagem", "Convite e registro enviados com sucesso!");
+            model.addAttribute("sucesso", true);
+        } catch (Exception e) {
+            model.addAttribute("mensagem", e.getMessage());
+            model.addAttribute("sucesso", false);
+        }
+        return "index";
+    }
 
-        registerService.registrarColaborador(matricula);
-
-        return ResponseEntity.ok("Colaborador processado com sucesso: " + matricula);
+    @PostMapping("/limpar")
+    public String limpar(Model model) {
+        model.addAttribute("colaboradores", null);
+        model.addAttribute("mensagem", null);
+        model.addAttribute("matricula", "");
+        model.addAttribute("sucesso", false);
+        return "index";
     }
 }

@@ -136,7 +136,26 @@ public class ImportService {
     private String trim(Object value) {
         return value == null ? null : value.toString().trim();
     }
+
+    /**
+     * Retorna dados do colaborador para o front-end.
+     */
+
+    public List<Map<String, Object>> buscarColaboradorParaView (String matricula) {
+        List<Map<String, Object>> resultado = protheusRepository.buscarColaborador(matricula);
+
+        return  resultado.stream().map(c ->Map.of(
+                "nome", c.get("RA_NOME"),
+                "email", c.get("RA_EMAIL"),
+                "nascimento", c.get("RA_NASC"),
+                "sexo", c.get("RA_SEXO"),
+                "salario", c.get("RA_SALARIO")
+        )).toList();
+    }
+
 }
+
+
 
 
 

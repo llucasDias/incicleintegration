@@ -11,6 +11,7 @@ Projeto em **Spring Boot (Java)** que conecta o ERP **TOTVS Protheus** à plataf
 - Envio de payloads no formato JSON para a API Incicle
 - Registro e convite automático de novos usuários
 - Estrutura modular com camadas de Repository, Service e Controller
+- Front-end simples com **Thymeleaf** para interação manual
 
 ---
 
@@ -21,6 +22,7 @@ Projeto em **Spring Boot (Java)** que conecta o ERP **TOTVS Protheus** à plataf
 - **Spring WebFlux (WebClient)**
 - **Spring JDBC**
 - **SQL Server**
+- **Thymeleaf**
 - **Jackson (ObjectMapper)**
 - **JUnit 5**
 - **Mockito**
@@ -30,17 +32,27 @@ Projeto em **Spring Boot (Java)** que conecta o ERP **TOTVS Protheus** à plataf
 ## Arquitetura do Projeto
 
 ```
-src
 └── main
-    └── java
-        └── com.lucas.incicleintegration
-            ├── service
-            │   ├── ImportService
-            │   ├── RegisterService
-            │   └── TokenService
-            ├── exception
-            ├── dto
-            └── repository
+├── java
+│ └── com.lucas.incicleintegration
+│ ├── service
+│ │ ├── ImportService.java
+│ │ ├── RegisterService.java
+│ │ └── TokenService.java
+│ ├── exception
+│ │ ├── AuthenticationException.java
+│ │ ├── BusinessException.java
+│ │ ├── ServerException.java
+│ │ └── ValidationException.java
+│ ├── dto
+│ └── repository
+│ └── ProtheusRepository.java
+└── resources
+├── templates
+│ └── index.html
+└── static
+└── css
+└── style.css
 ```
 
 ---
