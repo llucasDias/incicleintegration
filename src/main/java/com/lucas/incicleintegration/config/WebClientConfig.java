@@ -35,6 +35,8 @@ public class WebClientConfig {
         this.apiProperties = apiProperties;
     }
 
+    /** Config de Invite e Registro **/
+
 
     @Bean(name = "authClient")
     public WebClient authWebClient(WebClient.Builder builder) {
@@ -73,5 +75,48 @@ public class WebClientConfig {
                 .build();
     }
 
+
+
+
+
+
+    /** Config de Pós-Registro: Dados Pessoais e Cadastros **/
+
+    @Bean(name = "collaboratorsClient")
+    public WebClient collaboratorsClient(WebClient.Builder builder) {
+        return builder
+                .baseUrl(apiProperties.getBaseUrl())
+                .defaultHeader("Content-Type", apiProperties.getContentType())
+                .defaultHeader("Accept", apiProperties.getAccept())
+                .build();
+    }
+
+
+    @Bean(name = "jobClient")
+    public WebClient jobClient(WebClient.Builder builder) {
+        return builder
+                .baseUrl(apiProperties.getBaseUrl())
+                .defaultHeader("Content-Type", apiProperties.getContentType())
+                .defaultHeader("Accept", apiProperties.getAccept())
+                .build();
+    }
+
+    @Bean(name = "levelClient")
+    public WebClient levelClient(WebClient.Builder builder) {
+        return builder
+                .baseUrl(apiProperties.getBaseUrl())
+                .defaultHeader("Content-Type", apiProperties.getContentType())
+                .defaultHeader("Accept", apiProperties.getAccept())
+                .build();
+    }
+
+    @Bean(name = "sectorClient")
+    public WebClient sectorClient(WebClient.Builder builder) {
+        return builder
+                .baseUrl(apiProperties.getBaseUrl())
+                .defaultHeader("Content-Type", apiProperties.getContentType())
+                .defaultHeader("Accept", apiProperties.getAccept())
+                .build();
+    }
 
 }

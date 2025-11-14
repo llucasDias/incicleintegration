@@ -2,6 +2,11 @@ package com.lucas.incicleintegration.dto.invite;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * DTO de utilizado para as informações do envio do convite para o Incicle
+ */
+
+
 public record InviteRequest(
         @JsonProperty("email") String email,
         @JsonProperty("name") String name,

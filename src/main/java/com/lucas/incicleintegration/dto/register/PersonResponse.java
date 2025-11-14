@@ -2,6 +2,11 @@ package com.lucas.incicleintegration.dto.register;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+
+/**
+ * DTO retornado após o registro contendo informações pessoais do usuário.
+ */
+
 public record PersonResponse(
         @JsonProperty("name") String name,
         @JsonProperty("social_name") String social_name,

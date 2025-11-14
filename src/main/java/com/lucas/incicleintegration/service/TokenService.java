@@ -5,7 +5,6 @@ import com.lucas.incicleintegration.dto.auth.AuthRequest;
 import com.lucas.incicleintegration.dto.auth.AuthResponse;
 import com.lucas.incicleintegration.exception.AuthenticationException;
 import com.lucas.incicleintegration.exception.ServerException;
-import com.lucas.incicleintegration.exception.WebClientResponseException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
@@ -45,7 +44,7 @@ public class TokenService {
 
         AuthRequest request = new AuthRequest(apiProperties.getUsername(), apiProperties.getPassword());
 
-        try {
+
             AuthResponse response = authClient.post()
                     .bodyValue(request)
                     .retrieve()
@@ -62,11 +61,7 @@ public class TokenService {
 
             return cachedToken;
 
-        } catch (AuthenticationException | ServerException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new WebClientResponseException("Erro inesperado" + e.getMessage());
-        }
+
 
     }
 

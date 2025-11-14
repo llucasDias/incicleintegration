@@ -49,6 +49,8 @@ public class ImportService {
 
         // Buscar colaboradores no Protheus pelo RA (matricula)
         List<Map<String, Object>> resultado = protheusRepository.buscarColaborador(matricula);
+
+        // Excessão customizada
         if (resultado.isEmpty()) {
             throw new ValidationException("Nenhum colaborador encontrado");
         }
@@ -56,20 +58,24 @@ public class ImportService {
         // Obter token de autenticação via TokenService
         String token = tokenService.getToken();
 
-        // Mapear os dados do Protheus para DTO de envio (InviteRequest)
+
+        // Mapear os dados do Protheus para DTO de envio
         List<InviteRequest> listaInvite = resultado.stream()
                 .map(this::mapearColaborador)
                 .toList();
 
         InviteRequestWrapper wrapper = new InviteRequestWrapper(listaInvite);
 
-        // Enviar POST para API com tratamento de erros HTTP
+        //Chamada ao endpoint de envio de convites
         InviteResponseWrapper responseWrapper = inviteClient.post()
                 .uri(apiProperties.getInviteUrl())
                 .header("Authorization", "Bearer " + token)
                 .header("companyId", "750a4df3-28ca-41f0-a02a-ddc502dddefb")
                 .bodyValue(wrapper)
                 .retrieve()
+
+
+                // --- TRATAMENTO DE EXCEÇÕES
                 .onStatus(HttpStatusCode::is4xxClientError, clientResponse ->
                         clientResponse.bodyToMono(String.class)
                                 .flatMap(body -> {
@@ -85,13 +91,16 @@ public class ImportService {
                                 }))
                 .onStatus(HttpStatusCode::is5xxServerError, clientResponse ->
                         Mono.error(new ServerException("Erro interno no servidor")))
+
+
+                // Desserializa a resposta
                 .bodyToMono(InviteResponseWrapper.class)
                 .block();
     }
 
     /**
      * Mapeia os dados do Protheus para o DTO InviteRequest
-     */
+     **/
     private InviteRequest mapearColaborador(Map<String, Object> c) {
         Integer salario = c.get("RA_SALARIO") != null
                 ? ((Number) c.get("RA_SALARIO")).intValue()
@@ -99,6 +108,7 @@ public class ImportService {
 
         String sexo = validarSexo((String) c.get("RA_SEXO"));
         String dataFormatada = formatarData((String) c.get("RA_ADMISSA"));
+
 
         return new InviteRequest(
                 trim(c.get("RA_EMAIL")),
@@ -118,6 +128,10 @@ public class ImportService {
                 sexo
         );
     }
+
+    /**
+     * Tratamento para retirar espaços em brancos vindos do Protheus.
+     */
 
     private String trim(Object value) {
         return value == null ? null : value.toString().trim();

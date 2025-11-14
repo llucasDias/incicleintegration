@@ -75,6 +75,14 @@ public class ApiProperties {
     /** Tipo de conteúdo aceito nas respostas */
     private String accept;
 
+
+    private String jobUrl;
+
+    private String sectorUrl;
+
+    private String levelUrl;
+
+
     // ======================
     // Getters e Setters
     // ======================
@@ -114,4 +122,13 @@ public class ApiProperties {
 
     public String getAccept() { return accept; }
     public void setAccept(String accept) { this.accept = accept; }
+
+    public String getJobUrl() { return jobUrl; }
+    public void setJobUrl(String jobUrl) { this.jobUrl = jobUrl; }
+
+    public String getLevelUrl() { return levelUrl; }
+    public void setLevelUrl(String levelUrl) { this.levelUrl = levelUrl; }
+
+    public String getSectorUrl() { return sectorUrl; }
+    public void setSectorUrl(String sectorUrl) { this.sectorUrl = sectorUrl; }
 }
